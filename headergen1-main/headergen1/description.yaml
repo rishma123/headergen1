@@ -1,0 +1,10 @@
+Type: Jupyter Notebook Extension
+Compatibility: 3.x, 4.x, 5.x, 6.x, 7.x
+Name: Headergen
+Main: main.js
+Link: README.md
+Description: |
+  Headergen is used to convert undocumented notebooks to documented notebooks
+
+Parameters:
+- none
