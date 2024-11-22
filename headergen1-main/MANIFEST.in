@@ -1,0 +1,3 @@
+recursive-include headergen1 *.py *.json *.js *.yaml
+include README.md
+include setup.py
