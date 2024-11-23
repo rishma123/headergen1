@@ -1,5 +1,0 @@
-Metadata-Version: 2.1
-Name: headergen1
-Version: 1.0.3
-Summary: A Jupyter Notebook extension to convert undocumented notebooks to documented notebooks.
-Requires-Dist: notebook

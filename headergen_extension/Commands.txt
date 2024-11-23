@@ -1,0 +1,16 @@
+Commands
+
+
+
+# Install extension locally for testing
+python -m venv env1
+env1\Scripts\activate
+
+pip install -e .
+jupyter nbextension install headergen_extension --py --sys-prefix
+jupyter nbextension enable headergen_extension --py --sys-prefix
+
+
+jupyter nbextension disable jupyter_nbextensions_configurator --user
+
+jupyter notebook --NotebookApp.token='' --NotebookApp.password=''
