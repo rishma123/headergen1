@@ -95,45 +95,58 @@ define(['base/js/namespace', 'base/js/events'], function (Jupyter, events) {
             styleElement = document.createElement('style');
             styleElement.id = 'ml-headergen-style';
             styleElement.innerHTML = `
-                .ml-phase-header { 
-                    font-weight: bold; 
-                    font-size: medium; 
-                    margin-top: 5px; 
-                    margin-bottom: 5px; 
-                }
-                .library-link, .function-link, .view-function-calls { 
-                    color: black; 
-                    text-decoration: underline; 
-                    cursor: pointer; 
-                }
-                .library-link {
+                .ml-phase-container {
+                    display:block;
+                    transform: translateX(104px);
+               }
+
+                .ml-phase-header {
                     font-weight: bold;
+                    font-size: medium;
+                    margin: 0;
+                    padding: 0;
+                    display: block;
                 }
+
                 .view-function-calls {
-                    margin-bottom: 15px; 
+                    margin-bottom: 10px;
+                    margin-left: 0;
+                    padding-left: 0;
                 }
-                .function-details { 
-                    display: none; 
-                    color: black; 
-                    margin-left: 20px; 
-                    white-space: pre-wrap;
+
+                .function-details {
+                    display: none;
+                    color: black;
+                    margin-left: 0;
+                    padding-left: 0;
+                    white-space: pre-line;
                     font-family: monospace;
                     border-left: 4px solid #ccc;
-                    padding: 10px;
-                    margin-top: 10px; 
+                    padding: 5px;
+                    margin-top: 5px;
                 }
-                .nested-list { 
-                    list-style-type: disc; 
-                    margin-left: 20px; 
+
+                .nested-list {
+                    list-style-type: disc;
+                    margin-left: 20px;
                 }
-                .nested-list-1 { 
-                    list-style-type: square; 
-                    margin-left: 20px; 
+
+                .nested-list-1 {
+                    list-style-type: square;
+                    margin-left: 20px;
                 }
-                .highlight { 
-                    background-color: #ffff99; 
-                    font-weight: bold; 
+
+                .back-to-header {
+                    color: #007bff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    margin-top: 5px;
                 }
+
+                .back-to-header:hover {
+                    text-decoration: underline;
+                }
+
                 .sidebar {
                     position: fixed;
                     left: 0;
@@ -300,6 +313,8 @@ define(['base/js/namespace', 'base/js/events'], function (Jupyter, events) {
                                 <div id="${funcId}" class="function-details" style="display:none;">
                                     ${functions[func]}
                                 </div>
+                                <br>
+                                <a href="#ml-header-${i + 1}" class="back-to-header">Back to Header</a> <!-- Link to go back to header -->
                             </li>
                         `;
                     });

@@ -29,6 +29,8 @@ jupyter nbextension enable headergen_extension --py --sys-prefix
 
 ### Step 3: Start Jupyter Notebook
 Once everything is installed and enabled, start Jupyter Notebook by running:
+
 `jupyter notebook`
+
 This will open the Jupyter interface in your browser.
 
