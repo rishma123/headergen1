@@ -125,6 +125,12 @@ define(['base/js/namespace', 'base/js/events'], function (Jupyter, events) {
                     padding: 5px;
                     margin-top: 5px;
                 }
+                    
+                .library-link, .function-link, .view-function-calls { 
+                color: black; 
+                text-decoration: underline; 
+                cursor: pointer; 
+                }
 
                 .nested-list {
                     list-style-type: disc;
@@ -314,7 +320,7 @@ define(['base/js/namespace', 'base/js/events'], function (Jupyter, events) {
                                     ${functions[func]}
                                 </div>
                                 <br>
-                                <a href="#ml-header-${i + 1}" class="back-to-header">Back to Header</a> <!-- Link to go back to header -->
+                                <a href="#ml-header-${i + 1}" class="back-to-header">Back to Header</a>
                             </li>
                         `;
                     });
