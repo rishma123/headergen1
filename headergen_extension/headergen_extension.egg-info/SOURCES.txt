@@ -1,0 +1,12 @@
+MANIFEST.in
+README.md
+setup.py
+headergen_extension/__init__.py
+headergen_extension/extension.json
+headergen_extension.egg-info/PKG-INFO
+headergen_extension.egg-info/SOURCES.txt
+headergen_extension.egg-info/dependency_links.txt
+headergen_extension.egg-info/not-zip-safe
+headergen_extension.egg-info/requires.txt
+headergen_extension.egg-info/top_level.txt
+headergen_extension/static/main.js
