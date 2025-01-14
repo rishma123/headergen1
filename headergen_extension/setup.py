@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='headergen_extension',
-    version='0.1.4',
+    version='0.1.5',
     description='A Jupyter Notebook extension that generates documentation for notebooks that lack proper documentation.',
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",

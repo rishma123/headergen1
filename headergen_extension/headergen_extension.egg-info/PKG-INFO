@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: headergen_extension
-Version: 0.1.4
+Version: 0.1.5
 Summary: A Jupyter Notebook extension that generates documentation for notebooks that lack proper documentation.
 Description-Content-Type: text/markdown
 Requires-Dist: notebook<7
