@@ -133,7 +133,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
                 .nested-list { list-style-type: disc; margin-left: 20px; white-space: nowrap; }
                 .nested-list-1 { list-style-type: square; margin-left: 20px; white-space: nowrap; }
                 .library-link, .function-link { color: black; text-decoration: underline; cursor: pointer; font-weight: 600; font-size: 16px; }
-                .sidebar { position: fixed; left: 0; top: 122px; width: 300px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease; }
+                .sidebar { position: fixed; left: 0; top: 133px; width: 300px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease; }
                 .sidebar-closed { transform: translateX(-100%); }
                 .sidebar-open { transform: translateX(0); }
                 .sidebar h2 { font-size: 20px; margin-top: 0; }
