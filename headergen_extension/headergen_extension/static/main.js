@@ -86,7 +86,9 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         elem.classList.add("visible");
         if (backToHeaderLink) backToHeaderLink.style.display = "inline-block";
       }
-    } else { /* empty */ }
+    } else {
+      /* empty */
+    }
   };
 
   /**
@@ -153,7 +155,9 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
                 .highlighted-heading { font-size: 18px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
             `;
       document.head.appendChild(styleElement);
-    } else { /* empty */ }
+    } else {
+      /* empty */
+    }
   };
 
   /**
@@ -454,7 +458,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const formData = new FormData();
       formData.append("file", new File([notebookBlob], filePath));
 
-      const fixedServerUrl = "http://localhost:8000";
+      const fixedServerUrl = 'http://3di-1.cs.upb.de:8888';
 
       const response = await fetch(`${fixedServerUrl}/get_analysis_notebook/`, {
         method: "POST",
@@ -565,17 +569,23 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
     toggleButton.onmouseout = () => {
       toggleButton.style.backgroundColor = "#6c757d";
     };
+    // Set initial state to match headers' visibility
+    let headersVisible = true;
+
     toggleButton.onclick = () => {
       const headers = document.querySelectorAll(".ml-phase-container");
-      const isActive = toggleButton.classList.toggle("active");
+
+      // Toggle visibility state
+      headersVisible = !headersVisible;
 
       headers.forEach((header) => {
-        header.style.display = isActive ? "block" : "none";
+        header.style.display = headersVisible ? "block" : "none";
       });
 
-      // Update button text based on toggle state
-      toggleButton.innerHTML = isActive ? "Hide Headers" : "Show Headers";
+      // Update button text based on visibility state
+      toggleButton.innerHTML = headersVisible ? "Hide Headers" : "Show Headers";
     };
+
     toolbarContainer.appendChild(toggleButton);
 
     // Create and style the "Toggle Sidebar" button
