@@ -86,8 +86,6 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         elem.classList.add("visible");
         if (backToHeaderLink) backToHeaderLink.style.display = "inline-block";
       }
-    } else {
-      /* empty */
     }
   };
 
@@ -129,9 +127,9 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
                 .ml-phase-container { display:block; transform: translateX(104px); margin-bottom:12px; }
                 .ml-phase-header { font-weight: bold; font-size: medium; margin: 0; padding: 0; display: block; }
                 .view-function-calls { margin-bottom: 10px; margin-left: 0; padding-left: 0; text-decoration: underline; cursor: pointer; }
-                .function-details { display: none; color: black; margin-left: 0; padding-left: 0; white-space: pre-line; font-family: monospace; border-left: 4px solid #ccc; padding-left: 15px; margin-top: 5px; position: relative; }
+                .function-details { color: black; white-space: pre-line; font-family: monospace; margin-top: 5px; position: relative; right: 26px;}
                 .nested-list { list-style-type: disc; margin-left: 20px; white-space: nowrap; }
-                .nested-list-1 { list-style-type: square; margin-left: 20px; white-space: nowrap; }
+                .nested-list-1 { list-style-type: square; margin-left: 3px; white-space: nowrap; }
                 .library-link, .function-link { color: black; text-decoration: underline; cursor: pointer; font-weight: 600; font-size: 16px; }
                 .sidebar { position: fixed; left: 0; top: 133px; width: 300px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease; }
                 .sidebar-closed { transform: translateX(-100%); }
@@ -149,14 +147,20 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
                 .collapsible-content { padding-left: 20px; }
                 #notebook-container { margin-left: 320px; transition: margin-left 0.3s ease; }
                 .sidebar-closed + #notebook-container { margin-left: 20px; }
-                .back-to-header { display: none; color: #007bff; text-decoration: underline; font-size: 16px; margin-top: 5px; font-weight: bold; }
+                .back-to-header { display: none; color: #b05627; text-decoration: underline; font-size: 14px; margin-top: 5px; font-weight: bold; }
                 .back-to-header:hover { text-decoration: underline; }
                 .function-details.visible + .back-to-header { display: inline-block; }
                 .highlighted-heading { font-size: 18px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
+                .details-summary { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: bold; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-bottom: 5px; transition: background-color 0.3s ease; } .details-summary:hover { background-color: #e0e0e0; } .details-summary .chevron { width: 16px; height: 16px; margin-right: 8px; display: inline-block; font-size: 16px; text-align: center; line-height: 16px; color: #007bff; font-weight: bold; transition: transform 0.3s ease; } .details-summary.open .chevron { transform: rotate(90deg); } .sidebar .library-link, .sidebar .function-link { font-size: 12px; cursor: pointer; text-decoration: none; color: black; } .details-summary .library-link, .details-summary .function-link { text-decoration: underline; }
+                .details-content { margin-left: 20px; padding: 10px; background-color: #fafafa; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); display: none; } .cell-separator { border-top: 2px solid #ddd; margin: 10px 0; } 
+                .cell-highlight { background-color: #f9f9f9; padding: 10px; border: 1px solid #ccc; border-radius: 4px; } 
+                .expand-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 16l-6-6h12z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; } 
+                .collapse-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 8l6 6H6z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; }
+                .sidebar .library-link, .sidebar .function-link { font-size: 12px; cursor: pointer; text-decoration: none; color: black; } .details-summary .library-link, .details-summary .function-link { text-decoration: underline; }
+                .cell-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; border-radius: 4px; background-color: #f9f9f9; } .cell-container:hover { box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); }
             `;
       document.head.appendChild(styleElement);
     } else {
-      /* empty */
     }
   };
 
@@ -204,9 +208,14 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
 
       indexList.forEach((index) => {
         const cellId = index;
-        const cellLink = document.createElement("li");
-        cellLink.innerHTML = `<a href="#ml-header-${cellId}">Go to Cell ${cellId}</a>`;
-        cellList.appendChild(cellLink);
+        const cellContainer = document.createElement("li");
+        cellContainer.className = "cell-container"; // Container for both Go to Cell and View Function Calls
+
+        // Go to Cell link
+        const cellLink = document.createElement("a");
+        cellLink.href = `#ml-header-${cellId}`;
+        cellLink.innerText = `Go to Cell ${cellId}`;
+        cellContainer.appendChild(cellLink);
 
         const cellData = cellMapping[cellId];
         if (
@@ -214,19 +223,32 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
           cellData.functions &&
           Object.keys(cellData.functions).length > 0
         ) {
-          const viewFunctionsItem = document.createElement("li");
-          const viewFunctionsLink = document.createElement("a");
-          viewFunctionsLink.href = `#funcs-${cellId}`;
-          viewFunctionsLink.innerText = "View Function Calls";
-          viewFunctionsLink.style.textDecoration = "underline";
-          viewFunctionsLink.style.cursor = "pointer";
-          viewFunctionsLink.style.color = "black";
-          viewFunctionsLink.style.fontSize = "16px";
-          viewFunctionsLink.style.fontWeight = "bold";
+          const viewFunctionsItem = document.createElement("div");
 
+          // Create a <details> element to make "View Function Calls" collapsible
+          const viewFunctionsDetails = document.createElement("details");
+          const viewFunctionsSummary = document.createElement("summary");
+
+          // Create a chevron for the "View Function Calls" section
+          const chevronIcon = document.createElement("span");
+          chevronIcon.className = "chevron right"; // Chevron initially pointing right
+          chevronIcon.innerText = "►"; // Arrow pointing right
+
+          const functionCount = Object.keys(cellData.functions).length;
+          const functionText = functionCount === 1 ? "function" : "functions"; // Singular or plural based on count
+          viewFunctionsSummary.innerText = `View Function Calls (${functionCount} ${functionText})`;
+          viewFunctionsSummary.className = "details-summary";
+
+          // Add the chevron icon before the text
+          viewFunctionsSummary.prepend(chevronIcon);
+
+          // Attach the summary to the details
+          viewFunctionsDetails.appendChild(viewFunctionsSummary);
+
+          // Initially keep librariesList hidden
           const librariesList = document.createElement("ul");
           librariesList.className = "nested-list";
-          librariesList.style.display = "block"; // Open by default
+          librariesList.style.display = "none"; // Closed by default
 
           const libraries = {};
           for (const func in cellData.functions) {
@@ -237,69 +259,42 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
             libraries[libraryName].push(func);
           }
 
+          // Iterate through libraries and functions
           for (const library in libraries) {
-            const libId = `lib-${cellId}-${library}`;
             const libraryItem = document.createElement("li");
-            const libraryLink = document.createElement("span");
-            libraryLink.className = "library-link";
-            libraryLink.innerText = library;
-            libraryLink.style.textDecoration = "underline";
-            libraryLink.style.cursor = "pointer";
-            libraryLink.style.fontSize = "14px";
 
-            libraryLink.onclick = function () {
-              const nestedFunctions =
-                libraryItem.querySelector(".nested-list-1");
-              nestedFunctions.style.display =
-                nestedFunctions.style.display === "none" ? "block" : "none";
-            };
+            // Removed the library link (no longer making the library name a link)
+            libraryItem.innerText = library; // Just set the library name as text
 
-            const nestedFunctionsList = document.createElement("ul");
-            nestedFunctionsList.className = "nested-list-1";
-            nestedFunctionsList.style.display = "block"; // Open by default
-
+            // List of functions inside this library
             libraries[library].forEach((func) => {
-              const funcId = `func-${cellId}-${func}`;
               const functionItem = document.createElement("li");
               const functionLink = document.createElement("span");
               functionLink.className = "function-link";
               functionLink.innerText = func;
-              functionLink.style.textDecoration = "underline";
-              functionLink.style.cursor = "pointer";
-              functionLink.style.fontSize = "12px";
-
-              functionLink.onclick = function () {
-                const functionDetails =
-                  functionItem.querySelector(".function-details");
-                if (functionDetails) {
-                  functionDetails.style.display =
-                    functionDetails.style.display === "none" ? "block" : "none";
-                } else {
-                  alert("No additional details found for this function.");
-                }
-              };
-
-              const functionDetails = document.createElement("div");
-              functionDetails.className = "function-details";
-              functionDetails.style.display = "none";
-              functionDetails.style.fontSize = "12px";
-              functionDetails.innerText =
-                cellData.functions[func] || "No details available.";
 
               functionItem.appendChild(functionLink);
-              functionItem.appendChild(functionDetails);
-              nestedFunctionsList.appendChild(functionItem);
+              libraryItem.appendChild(functionItem);
             });
 
-            libraryItem.appendChild(libraryLink);
-            libraryItem.appendChild(nestedFunctionsList);
             librariesList.appendChild(libraryItem);
           }
 
-          viewFunctionsItem.appendChild(viewFunctionsLink);
-          viewFunctionsItem.appendChild(librariesList);
-          cellList.appendChild(viewFunctionsItem);
+          // Append the libraries list to the details block
+          viewFunctionsDetails.appendChild(librariesList);
+          viewFunctionsItem.appendChild(viewFunctionsDetails);
+          cellContainer.appendChild(viewFunctionsItem);
+
+          // Toggle the chevron icon direction on click
+          viewFunctionsSummary.onclick = function () {
+            const isOpen = viewFunctionsDetails.open;
+            chevronIcon.innerText = isOpen ? "►" : "▼"; // Toggle between right and down chevrons
+            librariesList.style.display = isOpen ? "none" : "block"; // Toggle visibility of content
+          };
         }
+
+        // Append the cell container to the list
+        cellList.appendChild(cellContainer);
       });
 
       phaseItem.appendChild(cellList);
@@ -412,7 +407,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
             libraryListHTML += `
                             <li>
                                 <span class="function-link" onclick="toggleVisibility('${funcId}')">${func}</span>
-                                <div id="${funcId}" class="function-details" style="display:block;"> 
+                                <div id="${funcId}" class="function-details" style="display:none;"> 
                                     ${highlightedContent}
                                 </div>
                                 <br>
@@ -458,7 +453,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const formData = new FormData();
       formData.append("file", new File([notebookBlob], filePath));
 
-      const fixedServerUrl = 'http://3di-1.cs.upb.de:8000';
+      const fixedServerUrl = "http://3di-1.cs.upb.de:8000";
 
       const response = await fetch(`${fixedServerUrl}/get_analysis_notebook/`, {
         method: "POST",
