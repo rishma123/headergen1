@@ -8,63 +8,45 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
   const HEADERGEN_BUTTON_ID = "headergen-button";
   const SPINNER_ID = "headergen-spinner";
 
+
   /**
    * Displays a spinner overlay on the screen.
+   * The spinner is a centered, white, spinning circle with a blue top.
+   * The spinner is positioned absolutely and takes up the full screen.
+   * The spinner is created only once and reused on subsequent calls.
    */
   const showSpinner = () => {
     let spinner = document.getElementById(SPINNER_ID);
     if (!spinner) {
       spinner = document.createElement("div");
       spinner.id = SPINNER_ID;
+      spinner.innerHTML = `
+      <div style="border: 8px solid #f3f3f3; border-top: 8px solid #3498db; 
+                  border-radius: 50%; width: 50px; height: 50px; 
+                  animation: spin 1s linear infinite;"></div>
+    `;
       spinner.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 2000;
-            `;
-
-      const spinnerIcon = document.createElement("div");
-      spinnerIcon.style.cssText = `
-                border: 8px solid #f3f3f3;
-                border-top: 8px solid #3498db;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-            `;
-
-      spinner.appendChild(spinnerIcon);
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(255, 255, 255, 0.8); display: flex; align-items: center; 
+      justify-content: center; z-index: 2000;
+    `;
       document.body.appendChild(spinner);
 
-      // Add spinner animation styles
       const style = document.createElement("style");
-      style.type = "text/css";
-      style.innerHTML = `
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `;
+      style.textContent = `
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    `;
       document.head.appendChild(style);
     }
-
     spinner.style.display = "flex";
   };
 
   /**
-   * Hides the spinner overlay.
+   * Hides the spinner overlay on the screen.
    */
   const hideSpinner = () => {
     const spinner = document.getElementById(SPINNER_ID);
-    if (spinner) {
-      spinner.style.display = "none";
-    }
+    if (spinner) spinner.style.display = "none";
   };
 
   /**
@@ -90,15 +72,36 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
   };
 
   /**
-   * Highlights headings in the given text.
-   * @param {string} text - The text to highlight headings in.
-   * @returns {string} - The text with highlighted headings.
+   * Toggles the visibility of an element containing function details by its ID.
+   * @param {string} funcId - The ID of the element to toggle.
    */
-  const highlightHeadings = (text) => {
-    const pattern = /(^|\n)([^\n]+?)\n-{2,}/g;
-    return text.replace(pattern, (match, prefix, heading) => {
-      return `${prefix}<span class="highlighted-heading">${heading}</span>\n`;
-    });
+  window.toggleFunctionDetails = (funcId) => {
+    const funcDetails = document.getElementById(funcId);
+    const backToHeaderLink = funcDetails.querySelector(".back-to-header");
+
+    if (funcDetails) {
+      const isVisible = funcDetails.style.display === "none";
+      funcDetails.style.display = isVisible ? "block" : "none";
+
+      // Show the "Back to Header" link if the content is scrollable
+      if (isVisible && funcDetails.scrollHeight > funcDetails.offsetHeight) {
+        backToHeaderLink.style.display = "inline";
+      } else {
+        backToHeaderLink.style.display = "none";
+      }
+    }
+  };
+
+  /**
+   * Toggles the visibility of an element containing function arguments by its ID.
+   * @param {string} id - The ID of the element to toggle.
+   */
+  window.toggleArgumentsVisibility = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display =
+        element.style.display === "none" ? "block" : "none";
+    }
   };
 
   /**
@@ -109,7 +112,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
     let sidebar = document.querySelector(`.${SIDEBAR_CLASS}`);
     if (!sidebar) {
       sidebar = document.createElement("div");
-      sidebar.className = `${SIDEBAR_CLASS} ${SIDEBAR_CLOSED_CLASS}`; // Initially closed
+      sidebar.className = `${SIDEBAR_CLASS} ${SIDEBAR_CLOSED_CLASS}`;
       document.body.appendChild(sidebar);
     }
     return sidebar;
@@ -125,13 +128,13 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       styleElement.id = "ml-headergen-style";
       styleElement.innerHTML = `
                 .ml-phase-container { display:block; transform: translateX(104px); margin-bottom:12px; }
-                .ml-phase-header { font-weight: bold; font-size: medium; margin: 0; padding: 0; display: block; }
-                .view-function-calls { margin-bottom: 10px; margin-left: 0; padding-left: 0; text-decoration: underline; cursor: pointer; }
+                .ml-phase-header { font-weight: bold; margin: 0; padding: 0; display: block; }
+                .view-function-calls { margin-bottom: 10px; margin-left: 0; padding-left: 0; text-decoration: underline; cursor: pointer; display: block; margin-top: 16px; }
                 .function-details { color: black; white-space: pre-line; font-family: monospace; margin-top: 5px; position: relative; right: 26px;}
                 .nested-list { list-style-type: disc; margin-left: 20px; white-space: nowrap; }
-                .nested-list-1 { list-style-type: square; margin-left: 3px; white-space: nowrap; }
-                .library-link, .function-link { color: black; text-decoration: underline; cursor: pointer; font-weight: 600; font-size: 16px; }
-                .sidebar { position: fixed; left: 0; top: 133px; width: 300px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease; }
+                .function-link { font-size: 16px;}
+                .library-link, .function-link { color: black; text-decoration: underline; cursor: pointer; font-weight: 600;}
+                .sidebar { position: fixed; left: 0; top: 133px; width: 20%; max-width: 400px; min-width: 200px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease, width 0.3s ease; } .sidebar-closed { transform: translateX(-100%); } .sidebar-open { transform: translateX(0); } #notebook-container { margin-left: 20%; transition: margin-left 0.3s ease; } .sidebar-closed + #notebook-container { margin-left: 0; } @media (max-width: 768px) { .sidebar { width: 30%; } #notebook-container { margin-left: 30%; } } @media (max-width: 480px) { .sidebar { width: 100%; } #notebook-container { margin-left: 0; } }
                 .sidebar-closed { transform: translateX(-100%); }
                 .sidebar-open { transform: translateX(0); }
                 .sidebar h2 { font-size: 20px; margin-top: 0; }
@@ -151,16 +154,20 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
                 .back-to-header:hover { text-decoration: underline; }
                 .function-details.visible + .back-to-header { display: inline-block; }
                 .highlighted-heading { font-size: 18px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
-                .details-summary { display: flex; align-items: center; cursor: pointer; font-size: 12px; font-weight: bold; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-bottom: 5px; transition: background-color 0.3s ease; } .details-summary:hover { background-color: #e0e0e0; } .details-summary .chevron { width: 16px; height: 16px; margin-right: 8px; display: inline-block; font-size: 16px; text-align: center; line-height: 16px; color: #007bff; font-weight: bold; transition: transform 0.3s ease; } .details-summary.open .chevron { transform: rotate(90deg); } 
-                .sidebar .library-link, .sidebar .function-link { font-size: 12px; cursor: pointer; text-decoration: none; color: black; word-wrap: break-word; text-overflow: ellipsis; overflow: hidden; white-space: normal; } .details-summary .library-link, .details-summary .function-link { text-decoration: underline; }
+                .details-summary { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: bold; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-bottom: 5px; transition: background-color 0.3s ease; } .details-summary:hover { background-color: #e0e0e0; } .details-summary .chevron { width: 16px; height: 16px; margin-right: 8px; display: inline-block; font-size: 16px; text-align: center; line-height: 16px; color: #007bff; font-weight: bold; transition: transform 0.3s ease; } .details-summary.open .chevron { transform: rotate(90deg); } 
+                .sidebar .library-link, .sidebar .function-link { font-size: 12px; cursor: pointer; text-decoration: none; color: black; word-wrap: break-word; text-overflow: ellipsis; overflow: hidden; white-space: normal; font-weight: normal} .details-summary .library-link, .details-summary .function-link { text-decoration: underline; }
                 .details-content { margin-left: 20px; padding: 10px; background-color: #fafafa; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); display: none; } .cell-separator { border-top: 2px solid #ddd; margin: 10px 0; } 
                 .cell-highlight { background-color: #f9f9f9; padding: 10px; border: 1px solid #ccc; border-radius: 4px; } 
                 .expand-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 16l-6-6h12z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; } 
                 .collapse-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 8l6 6H6z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; }
                 .cell-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; border-radius: 4px; background-color: #f9f9f9; } .cell-container:hover { box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); }
-            `;
+                .nested-list-1 ul { list-style-type: circle !important; margin-left: -21px; padding-left: 20px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-size: 16px; }
+                .nested-list-1 li { display: list-item; white-space: normal; overflow-wrap: anywhere; word-break: break-word; margin-bottom: 5px; list-style-type: square; font-size: 16px; } 
+                .args-label, .kwargs-label { font-size: 16px; font-weight: bold; display: inline-block; vertical-align: top; } 
+                .args-content, .kwargs-content { font-size: 14px; font-weight: normal; overflow-wrap: break-word; word-break: break-word; max-width: calc(100% - 100px); display: inline-block; vertical-align: top; }
+                .back-to-header { display: block !important; color: #be2506; text-decoration: underline; font-size: 14px; margin-top: 0px; margin-bottom: -60px; cursor: pointer; } .back-to-header:hover { color: #0056b3; }
+          `;
       document.head.appendChild(styleElement);
-    } else {
     }
   };
 
@@ -192,6 +199,8 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const phaseHeader = document.createElement("div");
       phaseHeader.className = "collapsible-header";
       phaseHeader.innerHTML = `<strong>${phase}</strong><span class="chevron down">▼</span>`;
+  // Toggles the visibility of the collapsible content and
+  // switches the chevron icon between down and up on click.
       phaseHeader.onclick = function () {
         const content = this.nextElementSibling;
         const chevron = this.querySelector(".chevron");
@@ -209,7 +218,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       indexList.forEach((index) => {
         const cellId = index;
         const cellContainer = document.createElement("li");
-        cellContainer.className = "cell-container"; // Container for both Go to Cell and View Function Calls
+        cellContainer.className = "cell-container";
 
         // Go to Cell link
         const cellLink = document.createElement("a");
@@ -225,30 +234,24 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         ) {
           const viewFunctionsItem = document.createElement("div");
 
-          // Create a <details> element to make "View Function Calls" collapsible
+          // Create a <details> element for "View Function Calls"
           const viewFunctionsDetails = document.createElement("details");
           const viewFunctionsSummary = document.createElement("summary");
 
-          // Create a chevron for the "View Function Calls" section
           const chevronIcon = document.createElement("span");
           chevronIcon.className = "chevron right"; // Chevron initially pointing right
-          chevronIcon.innerText = "►"; // Arrow pointing right
+          chevronIcon.innerText = "►";
 
           const functionCount = Object.keys(cellData.functions).length;
-          const functionText = functionCount === 1 ? "function" : "functions"; // Singular or plural based on count
+          const functionText = functionCount === 1 ? "function" : "functions";
           viewFunctionsSummary.innerText = `View Function Calls (${functionCount} ${functionText})`;
           viewFunctionsSummary.className = "details-summary";
-
-          // Add the chevron icon before the text
           viewFunctionsSummary.prepend(chevronIcon);
-
-          // Attach the summary to the details
           viewFunctionsDetails.appendChild(viewFunctionsSummary);
 
-          // Initially keep librariesList hidden
           const librariesList = document.createElement("ul");
           librariesList.className = "nested-list";
-          librariesList.style.display = "none"; // Closed by default
+          librariesList.style.display = "none"; // Hide by default
 
           const libraries = {};
           for (const func in cellData.functions) {
@@ -263,24 +266,28 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
           for (const library in libraries) {
             const libraryItem = document.createElement("li");
 
-            // Removed the library link (no longer making the library name a link)
-            libraryItem.innerText = library; // Just set the library name as text
+            // Make the library name bold
+            const libraryName = document.createElement("strong");
+            libraryName.innerText = library;
+            libraryItem.appendChild(libraryName);
 
-            // List of functions inside this library
+            // Create a list for functions inside this library with bullets
+            const functionsList = document.createElement("ul");
+            functionsList.style.listStyleType = "disc"; // This will add the bullet points
+
             libraries[library].forEach((func) => {
               const functionItem = document.createElement("li");
               const functionLink = document.createElement("span");
               functionLink.className = "function-link";
               functionLink.innerText = func;
-
               functionItem.appendChild(functionLink);
-              libraryItem.appendChild(functionItem);
+              functionsList.appendChild(functionItem);
             });
 
+            libraryItem.appendChild(functionsList);
             librariesList.appendChild(libraryItem);
           }
 
-          // Append the libraries list to the details block
           viewFunctionsDetails.appendChild(librariesList);
           viewFunctionsItem.appendChild(viewFunctionsDetails);
           cellContainer.appendChild(viewFunctionsItem);
@@ -288,12 +295,11 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
           // Toggle the chevron icon direction on click
           viewFunctionsSummary.onclick = function () {
             const isOpen = viewFunctionsDetails.open;
-            chevronIcon.innerText = isOpen ? "►" : "▼"; // Toggle between right and down chevrons
-            librariesList.style.display = isOpen ? "none" : "block"; // Toggle visibility of content
+            chevronIcon.innerText = isOpen ? "►" : "▼";
+            librariesList.style.display = isOpen ? "none" : "block";
           };
         }
 
-        // Append the cell container to the list
         cellList.appendChild(cellContainer);
       });
 
@@ -303,8 +309,17 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
   };
 
   /**
-   * Applies the linted content to the notebook.
-   * @param {Object} analysisData - The analysis data containing cell mappings.
+   * Applies linted content to the Jupyter notebook by updating the sidebar and
+   * cell elements with machine learning phase headers and function details.
+   *
+   * @param {Object} analysisData - The analysis data containing mapping information.
+   * @param {Object} analysisData.cell_mapping - A mapping of cell indices to cell data.
+   *
+   * The function processes each cell in the notebook, updates the sidebar with
+   * machine learning phases, and appends function call details to the cell elements. It
+   * creates or updates headers for machine learning phases using <h1> tags and manages
+   * visibility toggles for function call details. The sidebar and cell elements are
+   * styled and updated to reflect changes in the analysis data.
    */
   const applyLintedContent = (analysisData) => {
     const cellMapping = analysisData?.cell_mapping || {};
@@ -323,7 +338,6 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
     });
 
     initializeSidebar(phaseToIndexMapping, cellMapping);
-
     createStyleElement();
 
     cells.forEach((cell, i) => {
@@ -340,22 +354,26 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const existingFunctionDetails =
         cellElement.querySelector(".function-details");
 
+      // Update or create ML Phase Header
       if (existingHeader) {
         const phaseHeader = existingHeader.querySelector(".ml-phase-header");
         if (phaseHeader) {
-          phaseHeader.innerText = `${mlPhases.join(" | ")}`;
+          phaseHeader.outerHTML = `<h1 class="ml-phase-header">${mlPhases.join(
+            " | "
+          )}</h1>`;
         }
       } else {
         const headerElement = document.createElement("div");
         headerElement.id = `ml-header-${i + 1}`;
         headerElement.className = "ml-phase-container";
-        const phaseHeader = document.createElement("div");
+        const phaseHeader = document.createElement("h1");
         phaseHeader.className = "ml-phase-header";
         phaseHeader.innerText = `${mlPhases.join(" | ")}`;
         headerElement.appendChild(phaseHeader);
         cellElement.prepend(headerElement);
       }
 
+      // Handling functions and their arguments
       if (Object.keys(functions).length > 0) {
         let viewLink = cellElement.querySelector(".view-function-calls");
         if (!viewLink) {
@@ -397,25 +415,28 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
           const libId = `lib-${i + 1}-${library}`;
 
           libraryListHTML += `
-                    <li>
-                        <span class="library-link" onclick="toggleVisibility('${libId}')">${library}</span>
-                        <ul id="${libId}" class="nested-list-1" style="display:block;"> 
-                    `;
+            <li>
+              <h2 class="library-link" onclick="toggleVisibility('${libId}')">${library}</h2> <!-- Changed to h2 -->
+              <ul id="${libId}" class="nested-list-1" style="display:block;">
+          `;
+
+          // Show functions under library
           libraries[library].forEach((func) => {
             const funcId = `func-${i + 1}-${func}`;
-            const highlightedContent = highlightHeadings(functions[func] || "");
+            const functionData = functions[func];
+            const argumentsHTML = generateArgumentsHTML(functionData);
+            const docstringHTML = generateDocstringHTML(functionData, i + 1);
             libraryListHTML += `
-                            <li>
-                                <span class="function-link" onclick="toggleVisibility('${funcId}')">${func}</span>
-                                <div id="${funcId}" class="function-details" style="display:none;"> 
-                                    ${highlightedContent}
-                                </div>
-                                <br>
-                               <a href="#ml-header-${
-                                 i + 1
-                               }" class="back-to-header">back to header</a>
-                            </li>
-                        `;
+              <li>
+                <span class="function-link" onclick="toggleFunctionDetails('${funcId}')">${func}</span>
+                <div id="${funcId}" class="function-details" style="display:none;">
+                  ${docstringHTML}
+                </div>
+                <br>
+                <!-- Directly display Args and kwargs -->
+                ${argumentsHTML ? `${argumentsHTML}` : ""}
+              </li>
+            `;
           });
           libraryListHTML += "</ul></li>";
         });
@@ -436,7 +457,132 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
   };
 
   /**
-   * Runs the Headergen analysis.
+   * Generates HTML for a given function's arguments and keyword arguments.
+   * @param {Object} functionData - Object containing function data, including arguments.
+   * @param {number} cellNumber - Number of the cell containing the function.
+   * @returns {string} - HTML string of the arguments and keyword arguments, or an empty string if neither exist.
+   */
+  const generateArgumentsHTML = (functionData, cellNumber) => {
+    if (!functionData || !Array.isArray(functionData.arguments)) {
+      return ""; // If no valid function data or arguments, return an empty string
+    }
+
+    const allArgs = [];
+    const allKwargs = {};
+
+    // Collect arguments and keyword arguments
+    for (const argSet of functionData.arguments) {
+      if (Array.isArray(argSet?.args)) {
+        // Filter out empty arrays
+        const validArgs = argSet.args.filter((arg) => {
+          return !(Array.isArray(arg) && arg.length === 0); // Skip empty arrays
+        });
+        allArgs.push(...validArgs);
+      }
+
+      if (typeof argSet?.kwargs === "object" && argSet.kwargs !== null) {
+        for (const [key, value] of Object.entries(argSet.kwargs)) {
+          if (Array.isArray(value) && value.length === 0) {
+            continue; // Skip empty arrays
+          }
+          allKwargs[key] = value;
+        }
+      }
+    }
+
+    let argsHTML = "";
+    let kwargsHTML = "";
+
+    // Generate HTML only if there are valid arguments
+    if (allArgs.length > 0) {
+      argsHTML = `
+        <span class="args-label"><strong>Args:</strong></span>
+        <span class="args-content">${allArgs.join(", ")}</span>`;
+    }
+
+    // Generate HTML only if there are valid keyword arguments
+    if (Object.keys(allKwargs).length > 0) {
+      const kwargs = Object.entries(allKwargs)
+        .map(([key, value]) => {
+          if (Array.isArray(value)) {
+            return `<strong>${key}:</strong> [${value.join(", ")}]`; // Handle array formatting
+          }
+          return `<strong>${key}:</strong> ${value}`; // Handle other types
+        })
+        .join(", ");
+      kwargsHTML = `
+        <span class="kwargs-label"><strong>Kwargs:</strong></span>
+        <span class="kwargs-content">${kwargs}</span>`;
+    }
+
+    // Combine args and kwargs with a separator if both exist
+    if (argsHTML && kwargsHTML) {
+      return `<ul class="nested-list-1">
+                <li>${argsHTML} | ${kwargsHTML}</li>
+              </ul>`;
+    }
+
+    // Return only args or kwargs if one exists
+    if (argsHTML) {
+      return `<ul class="nested-list-1">
+                <li>${argsHTML}</li>
+              </ul>`;
+    }
+
+    if (kwargsHTML) {
+      return `<ul class="nested-list-1">
+                <li>${kwargsHTML}</li>
+              </ul>`;
+    }
+
+    // If neither args nor kwargs exist, return an empty string
+    return "";
+  };
+
+  /**
+   * Highlights headings in the given text that are followed by hyphens.
+   * The function identifies headings by matching lines followed by two or more hyphens.
+   * It wraps each identified heading in a <span> element with the class "highlighted-heading".
+   *
+   * @param {string} text - The input text containing headings to highlight.
+   * @returns {string} - The text with highlighted headings.
+   */
+
+  const highlightHeadings = (text) => {
+    const pattern = /(^|\n)([^\n]+?)\n-{2,}/g; // Matches headings followed by ----- (hyphens)
+    return text.replace(pattern, (match, prefix, heading) => {
+      return `${prefix}<span class="highlighted-heading">${heading}</span>\n`; // Highlight the heading
+    });
+  };
+
+  /**
+   * Generates HTML for a given function's docstring, highlighting headings.
+   *
+   * @param {object} functionData - Object containing function data, including the docstring.
+   * @returns {string} - HTML string of the highlighted docstring, or an empty string if not available.
+   */
+
+  const generateDocstringHTML = (functionData, headerId) => {
+    let docstringHTML = "";
+    if (functionData?.doc_string) {
+      docstringHTML = `
+        ${highlightHeadings(functionData.doc_string)}
+        <div style="margin-top: 10px;">
+          <a href="#ml-header-${headerId}" class="back-to-header" style="display: none;">back to header</a>
+        </div>
+      `;
+    }
+    return docstringHTML;
+  };
+
+  /**
+   * Runs the Headergen extension.
+   * Sends a POST request to the server with the current notebook as a JSON file.
+   * Applies the analysis data returned by the server to the notebook.
+   * Enables the "Toggle Headers" button and shows the sidebar.
+   * Disables the "Run Headergen" button while the analysis is running.
+   * Hides the spinner after the analysis is complete.
+   * @returns {Promise<void>}
    */
   const runHeadergen = async () => {
     const headergenButton = document.getElementById(HEADERGEN_BUTTON_ID);
@@ -495,133 +641,143 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
   };
 
   /**
-   * Adds the Headergen button to the toolbar.
+   * Creates a button element with the given properties.
+   * @param {string} id - The id attribute of the button.
+   * @param {string} text - The text content of the button.
+   * @param {string} className - The class attribute of the button.
+   * @param {Object} styles - An object of CSS styles to apply to the button.
+   * @param {function} onClick - The function to call when the button is clicked.
+   * @returns {HTMLElement} - The created button element.
+   */
+  const createButton = (id, text, className, styles, onClick) => {
+    const button = document.createElement("button");
+    button.id = id;
+    button.innerHTML = text;
+    button.className = className;
+    Object.assign(button.style, styles);
+    button.addEventListener("click", onClick);
+    return button;
+  };
+
+  /**
+   * Adds the Headergen buttons to the Jupyter notebook toolbar.
+   * The buttons are added to the toolbar container with the class "container.toolbar".
+   * The buttons are the "Run Headergen" button and the "Toggle Headers" button, which is
+   * initially hidden.
+   * The "Run Headergen" button is used to run the code analysis on the current notebook.
+   * The "Toggle Headers" button is used to toggle the visibility of the machine learning
+   * phase headers.
+   * The buttons are styled with CSS styles and classes.
    */
   const addHeadergenButton = () => {
     const toolbarContainer = document.querySelector(".container.toolbar");
-    if (!toolbarContainer) {
-      return;
-    }
+    if (!toolbarContainer) return;
 
-    // Create and style the "Run Headergen" button
-    const headergenButton = document.createElement("button");
-    headergenButton.innerHTML = "Run Headergen";
-    headergenButton.id = HEADERGEN_BUTTON_ID;
-    headergenButton.className = "btn btn-primary"; // Primary style for emphasis
-    headergenButton.style.cssText = `
-            margin: 5px;
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-        `;
-    headergenButton.onmouseover = () => {
-      headergenButton.style.backgroundColor = "#0056b3";
-    };
-    headergenButton.onmouseout = () => {
-      headergenButton.style.backgroundColor = "#007bff";
-    };
-    headergenButton.onclick = async () => {
-      headergenButton.disabled = true; // Disable button during operation
-      headergenButton.style.opacity = 0.6;
-      headergenButton.style.cursor = "not-allowed";
+    // Run Headergen Button
+    const headergenButton = createButton(
+      HEADERGEN_BUTTON_ID,
+      "Run Headergen",
+      "btn btn-primary",
+      {
+        margin: "5px",
+        padding: "8px 15px",
+        backgroundColor: "#007bff",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        fontSize: "14px",
+        cursor: "pointer",
+      },
+      async () => {
+        headergenButton.disabled = true;
+        headergenButton.style.opacity = "0.6";
+        headergenButton.style.cursor = "not-allowed";
 
-      await runHeadergen();
+        await runHeadergen();
 
-      headergenButton.disabled = false; // Re-enable button
-      headergenButton.style.opacity = 1;
-      headergenButton.style.cursor = "pointer";
+        headergenButton.disabled = false;
+        headergenButton.style.opacity = "1";
+        headergenButton.style.cursor = "pointer";
 
-      const toggleButton = document.getElementById(TOGGLE_BUTTON_ID);
-      if (toggleButton) {
-        toggleButton.style.display = "inline-block";
+        const toggleButton = document.getElementById(TOGGLE_BUTTON_ID);
+        if (toggleButton) toggleButton.style.display = "inline-block";
       }
-    };
+    );
     toolbarContainer.appendChild(headergenButton);
 
-    // Create and style the "Toggle Headers" button
-    const toggleButton = document.createElement("button");
-    toggleButton.id = TOGGLE_BUTTON_ID;
-    toggleButton.innerHTML = "Hide Headers";
-    toggleButton.className = "btn btn-secondary"; // Secondary style for differentiation
-    toggleButton.style.cssText = `
-            margin: 5px;
-            padding: 8px 15px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-            display: none; /* Initially hidden */
-        `;
-    toggleButton.onmouseover = () => {
-      toggleButton.style.backgroundColor = "#5a6268";
-    };
-    toggleButton.onmouseout = () => {
-      toggleButton.style.backgroundColor = "#6c757d";
-    };
-    // Set initial state to match headers' visibility
-    let headersVisible = true;
+    // Toggle Headers Button
+    const toggleButton = createButton(
+      TOGGLE_BUTTON_ID,
+      "Hide Headers",
+      "btn btn-secondary",
+      {
+        margin: "5px",
+        padding: "8px 15px",
+        backgroundColor: "#6c757d",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        fontSize: "14px",
+        cursor: "pointer",
+        display: "none", // Initially hidden
+      },
+      () => {
+        const headers = document.querySelectorAll(".ml-phase-container");
+        const headersVisible = toggleButton.innerHTML === "Hide Headers";
 
-    toggleButton.onclick = () => {
-      const headers = document.querySelectorAll(".ml-phase-container");
+        headers.forEach((header) => {
+          header.style.display = headersVisible ? "none" : "block";
+        });
 
-      // Toggle visibility state
-      headersVisible = !headersVisible;
-
-      headers.forEach((header) => {
-        header.style.display = headersVisible ? "block" : "none";
-      });
-
-      // Update button text based on visibility state
-      toggleButton.innerHTML = headersVisible ? "Hide Headers" : "Show Headers";
-    };
-
+        toggleButton.innerHTML = headersVisible
+          ? "Show Headers"
+          : "Hide Headers";
+      }
+    );
     toolbarContainer.appendChild(toggleButton);
 
-    // Create and style the "Toggle Sidebar" button
-    const sidebarToggleButton = document.createElement("button");
-    sidebarToggleButton.id = SIDEBAR_TOGGLE_BUTTON_ID;
-    sidebarToggleButton.innerHTML = "Hide Sidebar";
-    sidebarToggleButton.className = "btn btn-secondary"; // Secondary style for differentiation
-    sidebarToggleButton.style.cssText = `
-            margin: 5px;
-            padding: 8px 15px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-            display: none; /* Initially hidden */
-        `;
-    sidebarToggleButton.onmouseover = () => {
-      sidebarToggleButton.style.backgroundColor = "#5a6268";
-    };
-    sidebarToggleButton.onmouseout = () => {
-      sidebarToggleButton.style.backgroundColor = "#6c757d";
-    };
-    sidebarToggleButton.onclick = () => {
-      const sidebar = getOrCreateSidebar();
-      sidebar.classList.toggle(SIDEBAR_CLOSED_CLASS);
-      sidebar.classList.toggle(SIDEBAR_OPEN_CLASS);
+    // Toggle Sidebar Button
+    const sidebarToggleButton = createButton(
+      SIDEBAR_TOGGLE_BUTTON_ID,
+      "Hide Sidebar",
+      "btn btn-secondary",
+      {
+        margin: "5px",
+        padding: "8px 15px",
+        backgroundColor: "#6c757d",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        fontSize: "14px",
+        cursor: "pointer",
+        display: "none", // Initially hidden
+      },
+      () => {
+        const sidebar = getOrCreateSidebar();
+        sidebar.classList.toggle(SIDEBAR_CLOSED_CLASS);
+        sidebar.classList.toggle(SIDEBAR_OPEN_CLASS);
 
-      // Update button text based on sidebar state
-      sidebarToggleButton.innerHTML = sidebar.classList.contains(
-        SIDEBAR_CLOSED_CLASS
-      )
-        ? "Show Sidebar"
-        : "Hide Sidebar";
-    };
+        const notebookContainer = document.getElementById("notebook-container");
+        if (notebookContainer) {
+          const sidebarWidth = sidebar.classList.contains(SIDEBAR_CLOSED_CLASS)
+            ? "0"
+            : window.getComputedStyle(sidebar).width;
+          notebookContainer.style.marginLeft = sidebarWidth;
+        }
+
+        sidebarToggleButton.innerHTML = sidebar.classList.contains(
+          SIDEBAR_CLOSED_CLASS
+        )
+          ? "Show Sidebar"
+          : "Hide Sidebar";
+      }
+    );
     toolbarContainer.appendChild(sidebarToggleButton);
   };
 
   /**
-   * Loads the IPython extension.
+   * Initializes the Headergen extension.
+   * Adds the "Run Headergen" button to the notebook toolbar.
    */
   const load_ipython_extension = () => {
     addHeadergenButton();
