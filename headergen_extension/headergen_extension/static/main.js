@@ -599,7 +599,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const formData = new FormData();
       formData.append("file", new File([notebookBlob], filePath));
 
-      const fixedServerUrl = "http://3di-1.cs.upb.de:8000";
+      const fixedServerUrl = "http://3di-1.cs.upb.de";
 
       const response = await fetch(`${fixedServerUrl}/get_analysis_notebook/`, {
         method: "POST",
