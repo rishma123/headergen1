@@ -1,2 +1,0 @@
-include headergen_extension/static/*
-include headergen_extension/main.js
