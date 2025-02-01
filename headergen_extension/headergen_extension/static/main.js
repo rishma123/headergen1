@@ -8,12 +8,8 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
   const HEADERGEN_BUTTON_ID = "headergen-button";
   const SPINNER_ID = "headergen-spinner";
 
-
   /**
    * Displays a spinner overlay on the screen.
-   * The spinner is a centered, white, spinning circle with a blue top.
-   * The spinner is positioned absolutely and takes up the full screen.
-   * The spinner is created only once and reused on subsequent calls.
    */
   const showSpinner = () => {
     let spinner = document.getElementById(SPINNER_ID);
@@ -77,23 +73,24 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
    */
   window.toggleFunctionDetails = (funcId) => {
     const funcDetails = document.getElementById(funcId);
-    const backToHeaderLink = funcDetails.querySelector(".back-to-header");
 
     if (funcDetails) {
       const isVisible = funcDetails.style.display === "none";
       funcDetails.style.display = isVisible ? "block" : "none";
 
-      // Show the "Back to Header" link if the content is scrollable
-      if (isVisible && funcDetails.scrollHeight > funcDetails.offsetHeight) {
-        backToHeaderLink.style.display = "inline";
-      } else {
-        backToHeaderLink.style.display = "none";
+      // Ensure "Back to Header" link appears only if content is scrollable
+      const backToHeaderLink = funcDetails.querySelector(".back-to-header");
+      if (backToHeaderLink) {
+        backToHeaderLink.style.display =
+          isVisible && funcDetails.scrollHeight > funcDetails.offsetHeight
+            ? "inline"
+            : "none";
       }
     }
   };
 
   /**
-   * Toggles the visibility of an element containing function arguments by its ID.
+   * Toggles the visibility of function arguments by its ID.
    * @param {string} id - The ID of the element to toggle.
    */
   window.toggleArgumentsVisibility = (id) => {
@@ -126,47 +123,47 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
     if (!styleElement) {
       styleElement = document.createElement("style");
       styleElement.id = "ml-headergen-style";
-      styleElement.innerHTML = `
-                .ml-phase-container { display:block; transform: translateX(104px); margin-bottom:12px; }
-                .ml-phase-header { font-weight: bold; margin: 0; padding: 0; display: block; }
-                .view-function-calls { margin-bottom: 10px; margin-left: 0; padding-left: 0; text-decoration: underline; cursor: pointer; display: block; margin-top: 16px; }
-                .function-details { color: black; white-space: pre-line; font-family: monospace; margin-top: 5px; position: relative; right: 26px;}
-                .nested-list { list-style-type: disc; margin-left: 20px; white-space: nowrap; }
-                .function-link { font-size: 16px;}
-                .library-link, .function-link { color: black; text-decoration: underline; cursor: pointer; font-weight: 600;}
-                .sidebar { position: fixed; left: 0; top: 133px; width: 20%; max-width: 400px; min-width: 200px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease, width 0.3s ease; } .sidebar-closed { transform: translateX(-100%); } .sidebar-open { transform: translateX(0); } #notebook-container { margin-left: 20%; transition: margin-left 0.3s ease; } .sidebar-closed + #notebook-container { margin-left: 0; } @media (max-width: 768px) { .sidebar { width: 30%; } #notebook-container { margin-left: 30%; } } @media (max-width: 480px) { .sidebar { width: 100%; } #notebook-container { margin-left: 0; } }
-                .sidebar-closed { transform: translateX(-100%); }
-                .sidebar-open { transform: translateX(0); }
-                .sidebar h2 { font-size: 20px; margin-top: 0; }
-                .sidebar h3 { font-size: 19px; font-weight: bold; color: #007bff; margin-bottom: 10px; }
-                .sidebar ul { list-style-type: none; padding-left: 0; }
-                .sidebar ul li { margin-bottom: 10px; }
-                .sidebar ul li a { color: #007bff; text-decoration: none; }
-                .sidebar ul li a:hover { text-decoration: underline; }
-                .collapsible-header { cursor: pointer; padding: 10px; background-color: #e9ecef; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
-                .collapsible-header .chevron { transition: transform 0.3s ease; }
-                .collapsible-header .chevron.down { transform: rotate(0deg); }
-                .collapsible-header .chevron.up { transform: rotate(180deg); }
-                .collapsible-content { padding-left: 20px; }
-                #notebook-container { margin-left: 320px; transition: margin-left 0.3s ease; }
-                .sidebar-closed + #notebook-container { margin-left: 20px; }
-                .back-to-header { display: none; color: #b05627; text-decoration: underline; font-size: 14px; margin-top: 5px; font-weight: bold; }
-                .back-to-header:hover { text-decoration: underline; }
-                .function-details.visible + .back-to-header { display: inline-block; }
-                .highlighted-heading { font-size: 18px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
-                .details-summary { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: bold; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-bottom: 5px; transition: background-color 0.3s ease; } .details-summary:hover { background-color: #e0e0e0; } .details-summary .chevron { width: 16px; height: 16px; margin-right: 8px; display: inline-block; font-size: 16px; text-align: center; line-height: 16px; color: #007bff; font-weight: bold; transition: transform 0.3s ease; } .details-summary.open .chevron { transform: rotate(90deg); } 
-                .sidebar .library-link, .sidebar .function-link { font-size: 12px; cursor: pointer; text-decoration: none; color: black; word-wrap: break-word; text-overflow: ellipsis; overflow: hidden; white-space: normal; font-weight: normal} .details-summary .library-link, .details-summary .function-link { text-decoration: underline; }
-                .details-content { margin-left: 20px; padding: 10px; background-color: #fafafa; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); display: none; } .cell-separator { border-top: 2px solid #ddd; margin: 10px 0; } 
-                .cell-highlight { background-color: #f9f9f9; padding: 10px; border: 1px solid #ccc; border-radius: 4px; } 
-                .expand-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 16l-6-6h12z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; } 
-                .collapse-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 8l6 6H6z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; }
-                .cell-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; border-radius: 4px; background-color: #f9f9f9; } .cell-container:hover { box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); }
-                .nested-list-1 ul { list-style-type: circle !important; margin-left: -20px; padding-left: 20px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-size: 16px; }
-                .nested-list-1 li { display: list-item; white-space: normal; overflow-wrap: anywhere; word-break: break-word; margin-bottom: 5px; list-style-type: square; font-size: 16px; } 
-                .args-label, .kwargs-label { font-size: 16px; font-weight: bold; display: inline-block; vertical-align: top; } 
-                .args-content, .kwargs-content { font-size: 14px; font-weight: normal; overflow-wrap: break-word; word-break: break-word; max-width: calc(100% - 100px); display: inline-block; vertical-align: top; }
-                .back-to-header { display: block !important; color: #be2506; text-decoration: underline; font-size: 14px; margin-top: 0px; margin-bottom: -60px; cursor: pointer; } .back-to-header:hover { color: #0056b3; }
-          `;
+      styleElement.innerHTML = ` #notebook-container {transition: none; } 
+        .ml-phase-container { display:block; transform: translateX(104px); margin-bottom:12px; }
+        .ml-phase-header { font-weight: bold; margin: 0; padding: 0; display: block; }
+        .view-function-calls { margin-bottom: 10px; margin-left: 0; padding-left: 0; text-decoration: underline; cursor: pointer; display: block; margin-top: 16px; }
+        .function-details { color: black; white-space: pre-line; font-family: monospace; margin-top: 5px; position: relative; right: 26px;}
+        .nested-list { list-style-type: disc; margin-left: 20px; white-space: nowrap; }
+        .function-link { font-size: 18px;}
+        .library-link, .function-link { color: black; text-decoration: underline; cursor: pointer; font-weight: 600;}
+        .sidebar { position: fixed; left: 0; top: 133px; width: auto; max-width: 25%; min-width: 200px; height: calc(100% - 50px); background-color: #f4f4f4; color: #333; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; z-index: 1000; font-family: Arial, sans-serif; transition: transform 0.3s ease, width 0.3s ease; } 
+        .sidebar-closed { transform: translateX(-100%); } 
+        .sidebar-open { transform: translateX(0); } 
+        .sidebar h2 { font-size: 20px; margin-top: 0; } 
+        .sidebar h3 { font-size: 19px; font-weight: bold; color: #007bff; margin-bottom: 10px; } 
+        .sidebar ul { list-style-type: none; padding-left: 0; } 
+        .sidebar ul li { margin-bottom: 10px; } 
+        .sidebar ul li a { color: #007bff; text-decoration: none; } 
+        .sidebar ul li a:hover { text-decoration: underline; }
+        .collapsible-header { cursor: pointer; padding: 10px; background-color: #e9ecef; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .collapsible-header .chevron { transition: transform 0.3s ease; }
+        .collapsible-header .chevron.down { transform: rotate(0deg); }
+        .collapsible-header .chevron.up { transform: rotate(180deg); }
+        .collapsible-content { padding-left: 20px; }
+        .sidebar-closed + #notebook-container { margin-left: 20px; }
+        .back-to-header { display: none; color: #b05627; text-decoration: underline; font-size: 14px; margin-top: 5px; font-weight: bold; }
+        .back-to-header:hover { text-decoration: underline; }
+        .function-details.visible + .back-to-header { display: inline-block; }
+        .highlighted-heading { font-size: 18px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
+        .details-summary { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: bold; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-bottom: 5px; transition: background-color 0.3s ease; } .details-summary:hover { background-color: #e0e0e0; } .details-summary .chevron { width: 16px; height: 16px; margin-right: 8px; display: inline-block; font-size: 16px; text-align: center; line-height: 16px; color: #007bff; font-weight: bold; transition: transform 0.3s ease; } .details-summary.open .chevron { transform: rotate(90deg); } 
+        .sidebar .library-link, .sidebar .function-link { font-size: 12px; cursor: pointer; text-decoration: none; color: black; word-wrap: break-word; text-overflow: ellipsis; overflow: hidden; white-space: normal; font-weight: normal} .details-summary .library-link, .details-summary .function-link { text-decoration: underline; }
+        .details-content { margin-left: 20px; padding: 10px; background-color: #fafafa; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); display: none; } .cell-separator { border-top: 2px solid #ddd; margin: 10px 0; } 
+        .cell-highlight { background-color: #f9f9f9; padding: 10px; border: 1px solid #ccc; border-radius: 4px; } 
+        .expand-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 16l-6-6h12z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; } 
+        .collapse-icon { width: 10px; height: 10px; display: inline-block; margin-right: 8px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M12 8l6 6H6z"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; }
+        .cell-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; border-radius: 4px; background-color: #f9f9f9; } .cell-container:hover { box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); }
+        .nested-list-1 ul { list-style-type: square !important; padding-left: 20px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-size: 16px; }
+        .nested-list-1 li { display: list-item; white-space: normal; overflow-wrap: anywhere; word-break: break-word; margin-bottom: 5px; font-size: 16px; } 
+        .back-to-header { display: block !important; color: #be2506; text-decoration: underline; font-size: 14px; margin-top: 0px; margin-bottom: -60px; cursor: pointer; } .back-to-header:hover { color: #0056b3; }
+        .args-label, .kwargs-label { font-size: 18px; font-weight: bold; display: block; margin-bottom: 5px; } 
+        .args-content, .kwargs-content { font-size: 14px; overflow-wrap: anywhere; word-break: break-word; white-space: normal; display: block; max-width: 90%; max-height: 40px; transition: max-height 0.3s ease; margin-bottom: 5px; color: black; } 
+        .nested-list-1 { list-style-type: decimal; margin-left: 20px; font-size: 14px; color: #007bff; overflow-wrap: anywhere; } 
+        .nested-list-1 li { color: #007bff; } `;
       document.head.appendChild(styleElement);
     }
   };
@@ -199,8 +196,6 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const phaseHeader = document.createElement("div");
       phaseHeader.className = "collapsible-header";
       phaseHeader.innerHTML = `<strong>${phase}</strong><span class="chevron down">▼</span>`;
-  // Toggles the visibility of the collapsible content and
-  // switches the chevron icon between down and up on click.
       phaseHeader.onclick = function () {
         const content = this.nextElementSibling;
         const chevron = this.querySelector(".chevron");
@@ -401,8 +396,10 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
             .appendChild(detailsDiv);
         }
 
-        let libraryListHTML = `<ul class="nested-list" style="display:block;">`; // Open by default
+        let libraryListHTML = `<ul class="nested-list" style="display:block;">`; // Libraries open by default
         const libraries = {};
+
+        // Group functions by library
         Object.keys(functions).forEach((func) => {
           const libraryName = func.split(".")[0];
           if (!libraries[libraryName]) {
@@ -411,36 +408,38 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
           libraries[libraryName].push(func);
         });
 
+        // Generate library list
         Object.keys(libraries).forEach((library) => {
           const libId = `lib-${i + 1}-${library}`;
 
           libraryListHTML += `
-            <li>
-              <h2 class="library-link" onclick="toggleVisibility('${libId}')">${library}</h2> <!-- Changed to h2 -->
-              <ul id="${libId}" class="nested-list-1" style="display:block;">
-          `;
+    <li>
+      <h2 class="library-link" onclick="toggleVisibility('${libId}')">${library}</h2>
+      <ul id="${libId}" class="nested-list-1" style="display:none;"> <!-- Functions hidden initially -->
+  `;
 
-          // Show functions under library
+          // Show functions under the library (Initially hidden)
           libraries[library].forEach((func) => {
             const funcId = `func-${i + 1}-${func}`;
             const functionData = functions[func];
             const argumentsHTML = generateArgumentsHTML(functionData);
             const docstringHTML = generateDocstringHTML(functionData, i + 1);
+
             libraryListHTML += `
-              <li>
-                <span class="function-link" onclick="toggleFunctionDetails('${funcId}')">${func}</span>
-                <div id="${funcId}" class="function-details" style="display:none;">
-                  ${docstringHTML}
-                </div>
-                <br>
-                <!-- Directly display Args and kwargs -->
-                ${argumentsHTML ? `${argumentsHTML}` : ""}
-              </li>
-            `;
+      <li>
+        <span class="function-link" onclick="toggleFunctionDetails('${funcId}')">${func}</span>
+        <div id="${funcId}" class="function-details" style="display:none;">
+          ${docstringHTML}
+        </div>
+        <br>
+        ${argumentsHTML ? `${argumentsHTML}` : ""}
+      </li>
+    `;
           });
-          libraryListHTML += "</ul></li>";
+
+          libraryListHTML += `</ul></li>`; // Close function list
         });
-        libraryListHTML += "</ul>";
+        libraryListHTML += `</ul>`; // Close library list
 
         detailsDiv.innerHTML = libraryListHTML;
       } else {
@@ -466,10 +465,10 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
     if (!functionData || !Array.isArray(functionData.arguments)) {
       return ""; // If no valid function data or arguments, return an empty string
     }
-
+  
     const allArgs = [];
     const allKwargs = {};
-
+  
     // Collect arguments and keyword arguments
     for (const argSet of functionData.arguments) {
       if (Array.isArray(argSet?.args)) {
@@ -479,7 +478,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         });
         allArgs.push(...validArgs);
       }
-
+  
       if (typeof argSet?.kwargs === "object" && argSet.kwargs !== null) {
         for (const [key, value] of Object.entries(argSet.kwargs)) {
           if (Array.isArray(value) && value.length === 0) {
@@ -489,17 +488,17 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         }
       }
     }
-
+  
     let argsHTML = "";
     let kwargsHTML = "";
-
+  
     // Generate HTML only if there are valid arguments
     if (allArgs.length > 0) {
       argsHTML = `
         <span class="args-label"><strong>Args:</strong></span>
         <span class="args-content">${allArgs.join(", ")}</span>`;
     }
-
+  
     // Generate HTML only if there are valid keyword arguments
     if (Object.keys(allKwargs).length > 0) {
       const kwargs = Object.entries(allKwargs)
@@ -514,31 +513,14 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         <span class="kwargs-label"><strong>Kwargs:</strong></span>
         <span class="kwargs-content">${kwargs}</span>`;
     }
-
-    // Combine args and kwargs with a separator if both exist
-    if (argsHTML && kwargsHTML) {
-      return `<ul class="nested-list-1">
-                <li>${argsHTML} | ${kwargsHTML}</li>
-              </ul>`;
-    }
-
-    // Return only args or kwargs if one exists
-    if (argsHTML) {
-      return `<ul class="nested-list-1">
-                <li>${argsHTML}</li>
-              </ul>`;
-    }
-
-    if (kwargsHTML) {
-      return `<ul class="nested-list-1">
-                <li>${kwargsHTML}</li>
-              </ul>`;
-    }
-
-    // If neither args nor kwargs exist, return an empty string
-    return "";
+  
+    // Combine args and kwargs into a list without a separator
+    return `<ul class="nested-list-1">
+              ${argsHTML ? `<li>${argsHTML}</li>` : ""}
+              ${kwargsHTML ? `<li>${kwargsHTML}</li>` : ""}
+            </ul>`;
   };
-
+  
   /**
    * Highlights headings in the given text that are followed by hyphens.
    * The function identifies headings by matching lines followed by two or more hyphens.
@@ -599,7 +581,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
       const formData = new FormData();
       formData.append("file", new File([notebookBlob], filePath));
 
-      const fixedServerUrl = "http://3di-1.cs.upb.de:8000";
+      const fixedServerUrl = "http://3di-1.cs.upb.de:80";
 
       const response = await fetch(`${fixedServerUrl}/get_analysis_notebook/`, {
         method: "POST",
@@ -757,14 +739,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
         sidebar.classList.toggle(SIDEBAR_CLOSED_CLASS);
         sidebar.classList.toggle(SIDEBAR_OPEN_CLASS);
 
-        const notebookContainer = document.getElementById("notebook-container");
-        if (notebookContainer) {
-          const sidebarWidth = sidebar.classList.contains(SIDEBAR_CLOSED_CLASS)
-            ? "0"
-            : window.getComputedStyle(sidebar).width;
-          notebookContainer.style.marginLeft = sidebarWidth;
-        }
-
+        // Update button text based on sidebar visibility
         sidebarToggleButton.innerHTML = sidebar.classList.contains(
           SIDEBAR_CLOSED_CLASS
         )
@@ -772,6 +747,7 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
           : "Hide Sidebar";
       }
     );
+
     toolbarContainer.appendChild(sidebarToggleButton);
   };
 
