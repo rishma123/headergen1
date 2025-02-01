@@ -763,3 +763,4 @@ define(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
     load_ipython_extension: load_ipython_extension,
   };
 });
+
